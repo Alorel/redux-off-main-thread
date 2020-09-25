@@ -1,7 +1,7 @@
 {
   "name": "@alorel/redux-off-main-thread",
   "version": "0.0.0",
-  "description": "Utils for running Redux off the main thread",
+  "description": "A set of utilities for running Redux in a web worker",
   "main": "index.js",
   "module": "_esm5/index.js",
   "esm5": "_esm5/index.js",
