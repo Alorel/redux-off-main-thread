@@ -94,7 +94,7 @@ store.dispatch({type: 'some-action'});
 ```javascript
 // worker.js
 
-import {onReduxWorkerThreadReady} from '@alorel/redux-off-main-thread/worker';
+import {onReduxWorkerThreadReady, createReduxOMTMiddleware} from '@alorel/redux-off-main-thread/worker';
 import {applyMiddleware, createStore} from 'redux';
 import {STORE_DEFAULT_STATE} from './common';
 
@@ -130,13 +130,9 @@ const store = createWrappedStore({
 ```javascript
 // worker.js
 
-import {onReduxWorkerThreadInitialStateReceived} from '@alorel/redux-off-main-thread/worker';
+import {onReduxWorkerThreadInitialStateReceived, createReduxOMTMiddleware} from '@alorel/redux-off-main-thread/worker';
 import {applyMiddleware, createStore} from 'redux';
 
-/*
- * Optional, but lets you know when the main thread's finished adding event listeners - should be instant unless
- * you've created some weird setup for testing and the like
- */
 onReduxWorkerThreadInitialStateReceived()
   .then(initialState => {
      // The redux-off-main-thread middleware should always be last
@@ -158,8 +154,8 @@ import {createWrappedStore} from '@alorel/redux-off-main-thread/main-thread';
 
 const worker = new Worker('/worker.js');
 const store = createWrappedStore({
+  devtoolsInit: true, // or pass an options object - see API
   initialState: {some: {default: 'state'}},
-  syncInitialState: true,
   worker
 });
 ```
