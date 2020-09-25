@@ -79,7 +79,6 @@ function createConfig(rollupConfig) {
     external: _buildBaseExternals,
     input: [
       join(projectDir, 'index.ts'),
-      join(projectDir, 'common', 'index.ts'),
       join(projectDir, 'main-thread', 'index.ts'),
       join(projectDir, 'worker', 'index.ts')
     ],

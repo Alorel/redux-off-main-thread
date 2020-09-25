@@ -35,6 +35,7 @@ const middleware: Middleware = (store: MiddlewareAPI) => {
   /* eslint-enable implicit-arrow-linebreak */
 };
 
+/** Create a redux-off-main-thread middleware instance. This should be run on the worker thread. */
 export function createReduxOMTMiddleware(): Middleware {
   if (!IS_ON_WORKER) {
     throw new Error('Not running in a worker context');
