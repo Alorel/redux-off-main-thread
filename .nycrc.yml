@@ -8,6 +8,8 @@ extension:
 require:
   - ts-node/register
   - source-map-support/register
+all: true
+include: projects/**/*.ts
 exclude:
   - '**/*.spec.ts'
   - build/**/*

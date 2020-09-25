@@ -1,5 +1,26 @@
 {
-  "name": "@alorel/xxxxxxxxxx",
+  "name": "@alorel/redux-off-main-thread",
   "version": "0.0.0",
-  "description": "xxxxxxxxxx"
+  "description": "Utils for running Redux off the main thread",
+  "main": "index.js",
+  "module": "_esm5/index.js",
+  "esm5": "_esm5/index.js",
+  "es2015": "_esm2015/index.js",
+  "esm2015": "_esm2015/index.js",
+  "repository": "https://github.com/Alorel/redux-off-main-thread.git",
+  "types": "index.d.ts",
+  "typings": "index.d.ts",
+  "author": "Arturas Molcanovas <a.molcanovas@gmail.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  },
+  "peerDependencies": {
+    "fast-json-patch": "^3.0.0-1 || ^2.2.1",
+    "redux": "^4.0.0"
+  },
+  "dependencies": {
+    "tslib": "^1.7.0 || ^2.0.0"
+  }
 }

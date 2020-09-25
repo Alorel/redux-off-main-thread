@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "rootDir": "projects",
+    "outDir": "dist",
+    "module": "es2015",
     "allowSyntheticDefaultImports": true,
     "declaration": false,
     "noUnusedParameters": true,
@@ -21,8 +23,5 @@
     "assumeChangesOnlyAffectDirectDependencies": true,
     "stripInternal": true,
     "importHelpers": true
-  },
-  "include": [
-    "projects/**/*.spec.ts"
-  ]
+  }
 }
