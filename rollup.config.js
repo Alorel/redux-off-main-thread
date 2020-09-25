@@ -38,9 +38,11 @@ const CONFIG = {
   sourcemap: false,
   srcDir: join(__dirname, 'projects'),
   umd: {
-    globals: {},
+    globals: {
+      'fast-json-patch': 'jsonpatch'
+    },
     name: {
-      core: 'MyLibrary'
+      core: 'RdxOMT'
     }
   }
 };
@@ -60,7 +62,6 @@ function createConfig(rollupConfig) {
     fesm2015 = false,
     stdumd = false,
     minumd = false,
-    dts = false,
     tsconfig = 'tsconfig.json',
     watch = false
   } = rollupConfig;
@@ -76,7 +77,11 @@ function createConfig(rollupConfig) {
 
   const baseSettings = {
     external: _buildBaseExternals,
-    input: join(projectDir, 'index.ts'),
+    input: [
+      join(projectDir, 'index.ts'),
+      join(projectDir, 'main-thread', 'index.ts'),
+      join(projectDir, 'worker', 'index.ts')
+    ],
     watch: {
       exclude: 'node_modules/**/*'
     }
@@ -97,6 +102,13 @@ function createConfig(rollupConfig) {
       cjsSettings && require('@rollup/plugin-commonjs').default(cjsSettings),
       require('rollup-plugin-typescript2')({
         tsconfig,
+        tsconfigDefaults: {
+          compilerOptions: {
+            baseUrl: projectDir,
+            declarationDir: CONFIG.distDir
+          }
+        },
+        useTsconfigDeclarationDir: true,
         ...typescriptConfig
       }),
       replacePlugin({
@@ -163,7 +175,13 @@ function createConfig(rollupConfig) {
           format: 'es'
         }
       ].filter(Boolean),
-      plugins: getBasePlugins('es2015'),
+      plugins: getBasePlugins('es2015', {
+        tsconfigOverride: {
+          compilerOptions: {
+            declaration: true
+          }
+        }
+      }),
       preserveModules: true
     });
   }
@@ -302,12 +320,8 @@ function createConfig(rollupConfig) {
     const cpPlugin = require('@alorel/rollup-plugin-copy').copyPlugin({
       copy: [
         {
-          from: 'LICENSE',
+          from: ['LICENSE', 'README.md'],
           opts: {glob: {cwd: __dirname}}
-        },
-        {
-          from: 'README.md',
-          opts: {glob: {cwd: projectDir}}
         }
       ],
       defaultOpts: {
@@ -322,10 +336,7 @@ function createConfig(rollupConfig) {
       require('@alorel/rollup-plugin-copy-pkg-json').copyPkgJsonPlugin({
         pkgJsonPath: join(projectDir, 'package.json')
       }),
-      !watch && cpPlugin,
-      dts && !watch && require('@alorel/rollup-plugin-dts').dtsPlugin({
-        cliArgs: ['--rootDir', `projects/${project}`]
-      })
+      !watch && cpPlugin
     ].filter(Boolean));
   }
 
@@ -333,11 +344,10 @@ function createConfig(rollupConfig) {
 }
 
 module.exports = function (inConfig) {
-  let projects = inConfig.projects;
+  const projects = inConfig.projects ?
+    inConfig.projects.split(',') :
+    require('./build/rollup/_syncPkg')._buildGetProjects();
   delete inConfig.projects;
-  if (!projects) {
-    projects = require('./build/rollup/_syncPkg')._buildGetProjects();
-  }
 
   const out = projects.flatMap(project => createConfig({...inConfig, project}));
 
@@ -345,7 +355,36 @@ module.exports = function (inConfig) {
     delete inConfig[p];
   }
 
-  return out;
+  return out.concat((() => {
+    const fs = require('fs');
+
+    const dir = fs.mkdtempSync(require('os').tmpdir() + require('path').sep);
+
+    return {
+      input: '@',
+      output: {
+        dir,
+        format: 'es'
+      },
+      plugins: [{
+        load: id => id === '@' ? 'alert(1);' : null,
+        name: 'rollup-plugin-dts-clean',
+        resolveId: id => id === '@' ? '@' : null,
+        writeBundle() {
+          const cwd = join(__dirname, 'dist');
+          require('glob').sync('**/*.d.ts', {cwd})
+            .map(f => join(cwd, f))
+            .forEach(f => {
+              const c = fs.readFileSync(f, 'utf8');
+              const trimmed = c.trimEnd();
+              if (!trimmed || trimmed === 'export {};') {
+                fs.unlinkSync(f);
+              }
+            });
+        }
+      }]
+    };
+  })());
 };
 
 Object.defineProperty(module.exports, '__esModule', {value: true});

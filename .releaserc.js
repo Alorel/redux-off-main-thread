@@ -17,6 +17,7 @@ module.exports = {
   prepare: [
     '@semantic-release/changelog',
     NPM,
+    exec('yarn run sync-pkg'),
     exec('yarn run doctoc'),
     {
       assets: [
@@ -24,7 +25,7 @@ module.exports = {
         'README.md',
         'package.json',
         'yarn.lock',
-        ...projectNames.flatMap(n => [`projects/${n}/package.json`, `projects/${n}.README.md`])
+        ...projectNames.map(n => `projects/${n}/package.json`)
       ],
       message: 'chore(release): ${nextRelease.version}',
       path: '@semantic-release/git'
@@ -32,7 +33,7 @@ module.exports = {
     exec('yarn run rollup')
   ],
   publish: [
-    ...projectNames.map(p => `bash -c "cd dist/${p} && npm publish"`),
+    ...projectNames.map(p => exec(`bash -c "cd dist/${p} && npm publish"`)),
     GH
   ],
   tagFormat: '${version}',

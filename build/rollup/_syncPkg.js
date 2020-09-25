@@ -7,6 +7,20 @@ function _buildGetProjects() {
   return fs.readdirSync(projectDir, 'utf8');
 }
 
+const pkgJsonFor = (() => {
+  const cache = {};
+
+  return projName => {
+    if (!cache[projName]) {
+      const pkgJsonPath = join(projectDir, projName, 'package.json');
+      const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
+      cache[projName] = [pkgJson, pkgJsonPath];
+    }
+
+    return cache[projName];
+  };
+})();
+
 // eslint-disable-next-line complexity,max-lines-per-function
 function _buildSyncPkgJson(fields) {
   if (!fields?.length) {
@@ -17,19 +31,7 @@ function _buildSyncPkgJson(fields) {
   const rootPkgJson = JSON.parse(fs.readFileSync(require.resolve('../../package.json'), 'utf8'));
   const depFields = ['peerDependencies', 'dependencies', 'devDependencies'];
 
-  const pkgJsonFor = (() => {
-    const cache = {};
 
-    return projName => {
-      if (!cache[projName]) {
-        const pkgJsonPath = join(projectDir, projName, 'package.json');
-        const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
-        cache[projName] = [pkgJson, pkgJsonPath];
-      }
-
-      return cache[projName];
-    };
-  })();
   const packageNames = new Set(projects.map(p => pkgJsonFor(p)[0].name));
 
   for (const projName of projects) {
@@ -78,7 +80,7 @@ function _buildSyncPkgJson(fields) {
             // eslint-disable-next-line max-depth
             if (rootVersion !== version) {
               changed = true;
-              pkgJson[fPkg][dep] = version;
+              pkgJson[fPkg][dep] = rootVersion;
             }
 
             break depSearch;
@@ -115,6 +117,7 @@ const _buildPkgDefaultSyncFields = [
 module.exports = {
   _buildGetProjects,
   _buildPkgDefaultSyncFields,
+  _buildPkgJsonFor: pkgJsonFor,
   _buildSyncPkgJson
 };
 
