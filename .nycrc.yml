@@ -12,6 +12,7 @@ all: true
 include: projects/**/*.ts
 exclude:
   - '**/*.spec.ts'
+  - '**/index.ts'
   - build/**/*
   - test/**/*
 sourceMap: true
