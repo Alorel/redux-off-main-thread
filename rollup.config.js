@@ -1,4 +1,4 @@
-const {join} = require('path');
+const {join, relative} = require('path');
 const {_buildBaseExternals, _buildUmdExternals} = require('./build/rollup/_baseExternals');
 const {_buildLazyReq} = require('./build/rollup/_lazyReq');
 const {_buildGroup} = require('./build/rollup/_buildGroup');
@@ -80,8 +80,9 @@ function createConfig(rollupConfig) {
     input: [
       join(projectDir, 'index.ts'),
       join(projectDir, 'main-thread', 'index.ts'),
-      join(projectDir, 'worker', 'index.ts')
-    ],
+      join(projectDir, 'worker', 'index.ts'),
+      join(projectDir, 'common', 'index.ts')
+    ].map(abs => relative(__dirname, abs)),
     watch: {
       exclude: 'node_modules/**/*'
     }
@@ -355,36 +356,42 @@ module.exports = function (inConfig) {
     delete inConfig[p];
   }
 
-  return out.concat((() => {
-    const fs = require('fs');
+  return [
+    ...out,
+    ...(() => {
+      if (inConfig.watch) {
+        return [];
+      }
+      const fs = require('fs');
 
-    const dir = fs.mkdtempSync(require('os').tmpdir() + require('path').sep);
+      const dir = fs.mkdtempSync(require('os').tmpdir() + require('path').sep);
 
-    return {
-      input: '@',
-      output: {
-        dir,
-        format: 'es'
-      },
-      plugins: [{
-        load: id => id === '@' ? 'alert(1);' : null,
-        name: 'rollup-plugin-dts-clean',
-        resolveId: id => id === '@' ? '@' : null,
-        writeBundle() {
-          const cwd = join(__dirname, 'dist');
-          require('glob').sync('**/*.d.ts', {cwd})
-            .map(f => join(cwd, f))
-            .forEach(f => {
-              const c = fs.readFileSync(f, 'utf8');
-              const trimmed = c.trimEnd();
-              if (!trimmed || trimmed === 'export {};') {
-                fs.unlinkSync(f);
-              }
-            });
-        }
-      }]
-    };
-  })());
+      return [{
+        input: '@',
+        output: {
+          dir,
+          format: 'es'
+        },
+        plugins: [{
+          load: id => id === '@' ? 'alert(1);' : null,
+          name: 'rollup-plugin-dts-clean',
+          resolveId: id => id === '@' ? '@' : null,
+          writeBundle() {
+            const cwd = join(__dirname, 'dist');
+            require('glob').sync('**/*.d.ts', {cwd})
+              .map(f => join(cwd, f))
+              .forEach(f => {
+                const c = fs.readFileSync(f, 'utf8');
+                const trimmed = c.trimEnd();
+                if (!trimmed || trimmed === 'export {};') {
+                  fs.unlinkSync(f);
+                }
+              });
+          }
+        }]
+      }];
+    })()
+  ];
 };
 
 Object.defineProperty(module.exports, '__esModule', {value: true});
