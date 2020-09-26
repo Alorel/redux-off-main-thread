@@ -2,16 +2,16 @@ import {is} from './is';
 import {ReduxOMTEvent} from './ReduxOMTEvent';
 
 /** @internal */
-export interface ReduxOMTReadyEvent {
+export interface ReadyEvent {
   type: ReduxOMTEvent.READY;
 }
 
 /** @internal */
-export function createReduxOMTReadyEvent(): ReduxOMTReadyEvent {
+export function createReadyEvent(): ReadyEvent {
   return {type: ReduxOMTEvent.READY};
 }
 
 /** @internal */
-export function isReduxOMTReadyEvent(v: any): v is ReduxOMTReadyEvent {
+export function isReadyEvent(v: any): v is ReadyEvent {
   return is(v, ReduxOMTEvent.READY);
 }

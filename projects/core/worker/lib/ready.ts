@@ -1,10 +1,10 @@
-import {isReduxOMTReadyEvent} from '../../common/ReadyEvent';
+import {isReadyEvent} from '../../common/ReadyEvent';
 import {ReduxOMTEvent} from '../../common/ReduxOMTEvent';
 import {IS_ON_WORKER} from './support';
-import {timeoutListener} from './timeoutListener';
+import {timeoutListener} from '../../common/timeoutListener';
 
 const READY$: Promise<void> = IS_ON_WORKER ?
-  timeoutListener(ReduxOMTEvent.READY, isReduxOMTReadyEvent) :
+  timeoutListener(ReduxOMTEvent.READY, isReadyEvent) :
   null as any;
 
 /**

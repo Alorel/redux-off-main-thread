@@ -1,4 +1,5 @@
-import {ReduxOMTEvent} from '../../common/ReduxOMTEvent';
+import {Conf} from '../worker/lib/Conf';
+import {ReduxOMTEvent} from './ReduxOMTEvent';
 
 interface OkResponse<T> {
   data: T;
@@ -13,17 +14,28 @@ interface TimeoutResponse {
 /** @internal */
 export type TimeoutListenerResponse<T> = OkResponse<T> | TimeoutResponse;
 
+type Listener = (evt: MessageEvent) => void;
+type ListenerFn = (type: 'message', listener: Listener) => void;
+
+function resolveListenersFromContext(ctx?: any): [ListenerFn, ListenerFn] {
+  return ctx ?
+    [ctx.addEventListener.bind(ctx), ctx.removeEventListener.bind(ctx)] :
+    [addEventListener, removeEventListener];
+}
+
 /** @internal */
 export function timeoutListener<T, E>(
   identifier: ReduxOMTEvent,
   predicate: (data: any) => data is E,
-  getPayload?: (data: E) => T
+  getPayload?: ((data: E) => T) | null,
+  ctx?: any
 ): Promise<T> {
-  let listener: (evt: MessageEvent) => void = null as any;
+  let listener: Listener = null as any;
+  const [addListener, removeListener] = resolveListenersFromContext(ctx);
 
   const clean = (): void => {
     if (listener) {
-      removeEventListener('message', listener);
+      removeListener('message', listener);
       listener = null as any;
     }
   };
@@ -38,7 +50,7 @@ export function timeoutListener<T, E>(
         r({data: getPayload ? getPayload(data) : undefined as any, ok: true});
       }
     };
-    addEventListener('message', listener);
+    addListener('message', listener);
   });
 
   return Promise.race<TimeoutListenerResponse<T>>([timeout$, listener$])
@@ -49,6 +61,6 @@ export function timeoutListener<T, E>(
         return rsp.data;
       }
 
-      throw new Error(`Main thread did not send ${identifier} in 60 seconds`);
+      throw new Error(`Didn't receive a ${identifier} event in ${Conf.LONG_MESSAGE_LISTENER_TIMEOUT}ms.`);
     });
 }

@@ -5,7 +5,7 @@ import {SinonSpy, fake} from 'sinon';
 import {createActionDispatchedEvent} from '../../common/ActionDispatchedEvent';
 import {createActionProcessedEvent} from '../../common/ActionProcessedEvent';
 import {createInitialStateEvent} from '../../common/InitialStateEvent';
-import {createReduxOMTReadyEvent} from '../../common/ReadyEvent';
+import {createReadyEvent} from '../../common/ReadyEvent';
 import {FakeWorker} from '../../test-util/FakeWorker';
 import {createWrappedStore} from './createWrappedStore';
 import {DevtoolsExtensionFactory} from './DevtoolsExtension';
@@ -100,7 +100,7 @@ describe('createWrappedStore', () => {
     it('Should just emit ready event if sync is disabled', () => {
       createWrappedStore({initialState, worker});
       expect(worker._postMessage.callCount).to.eq(1, 'callCount');
-      expect(worker._postMessage.lastCall.lastArg).to.deep.eq(createReduxOMTReadyEvent(), 'Event');
+      expect(worker._postMessage.lastCall.lastArg).to.deep.eq(createReadyEvent(), 'Event');
     });
 
     it('Should emit ready & sync events if sync is enabled', () => {
@@ -112,7 +112,7 @@ describe('createWrappedStore', () => {
         createInitialStateEvent(initialState),
         'Sync event'
       );
-      expect(calls[1].lastArg).to.deep.eq(createReduxOMTReadyEvent(), 'Ready event');
+      expect(calls[1].lastArg).to.deep.eq(createReadyEvent(), 'Ready event');
     });
   });
 
@@ -153,7 +153,7 @@ describe('createWrappedStore', () => {
 
       it('Shouldn\'t update state or notify devtools if it\'s an irrelevant event', () => {
         const oldState = store.getState();
-        worker.receiveEvent(createReduxOMTReadyEvent());
+        worker.receiveEvent(createReadyEvent());
 
         expect(store.getState()).to.eq(oldState, 'State change');
         expect(send.callCount).to.eq(0, 'callCount');

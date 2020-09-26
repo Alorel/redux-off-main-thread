@@ -1,1 +1,1 @@
-export type WorkerPartial = Pick<Worker, 'addEventListener' | 'postMessage'>;
+export type WorkerPartial = Pick<Worker, 'addEventListener' | 'postMessage' | 'removeEventListener'>;

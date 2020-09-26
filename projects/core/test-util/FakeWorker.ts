@@ -1,8 +1,8 @@
-import '../worker/index';
-import '../main-thread/index';
-import '../common/index';
 import {fake, SinonSpy} from 'sinon';
+import '../common/index';
+import '../main-thread/index';
 import {WorkerPartial} from '../main-thread/lib/wrapped-store/WorkerPartial';
+import '../worker/index';
 
 /** @internal */
 export class FakeWorker implements WorkerPartial {
@@ -22,5 +22,9 @@ export class FakeWorker implements WorkerPartial {
     for (const l of this._listeners) {
       l({data});
     }
+  }
+
+  removeEventListener(_evt: 'message', listener: (...args: any[]) => void): void {
+    this._listeners.delete(listener);
   }
 }

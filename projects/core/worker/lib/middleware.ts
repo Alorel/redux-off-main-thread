@@ -2,10 +2,12 @@ import {compare, Operation} from 'fast-json-patch';
 import {AnyAction, Dispatch, Middleware, MiddlewareAPI} from 'redux';
 import {isActionDispatchedEvent} from '../../common/ActionDispatchedEvent';
 import {createActionProcessedEvent} from '../../common/ActionProcessedEvent';
+
+/** @internal */
+import '../../common/declarations';
+
 import {getChangedPaths} from './getChangedPaths';
 import {IS_ON_WORKER} from './support';
-
-declare function postMessage(msg: any, transfers?: Transferable[]): void;
 
 function process(action: AnyAction, oldState: any, newState: any): void {
   const diff: Operation[] = compare(oldState, newState);

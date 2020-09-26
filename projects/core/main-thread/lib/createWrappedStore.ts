@@ -6,18 +6,18 @@ import {
   isMutatingActionProcessedEvent,
   MutatingActionProcessedEvent
 } from '../../common/ActionProcessedEvent';
+
+/** @internal */
+import '../../common/declarations';
+
 import {createInitialStateEvent} from '../../common/InitialStateEvent';
-import {createReduxOMTReadyEvent} from '../../common/ReadyEvent';
+import {createReadyEvent} from '../../common/ReadyEvent';
 import {clonePath} from './clonePath';
-import {DevtoolsExtensionFactory} from './DevtoolsExtension';
 import {createSubscribers} from './wrapped-store/createSubscribers';
 import {createDispatch} from './wrapped-store/dispatch';
 import {replaceReducer} from './wrapped-store/replaceReducer';
 import {WorkerPartial} from './wrapped-store/WorkerPartial';
 import {WrappedStore} from './wrapped-store/WrappedStore';
-
-/** @internal */
-declare const __REDUX_DEVTOOLS_EXTENSION__: DevtoolsExtensionFactory;
 
 /** {@link createWrappedStore} initialisation config */
 export interface CreateWrappedStoreInit<S> {
@@ -88,7 +88,7 @@ function create<S, A extends Action>(
     });
   }
 
-  worker.postMessage(createReduxOMTReadyEvent());
+  worker.postMessage(createReadyEvent());
 
   return {
     dispatch: createDispatch<A>(worker),

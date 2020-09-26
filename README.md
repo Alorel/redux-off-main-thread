@@ -16,10 +16,11 @@ A set of utilities for running Redux in a web worker.
 
 - [Installation](#installation)
 - [Overview](#overview)
-- [Usage](#usage)
+- [Usage & Examples](#usage--examples)
   - [Basic usage](#basic-usage)
   - [Sending default state from the main thread](#sending-default-state-from-the-main-thread)
   - [Adding Redux devtools support](#adding-redux-devtools-support)
+  - [Letting the worker provide the initial state](#letting-the-worker-provide-the-initial-state)
 - [API](#api)
   - [Worker](#worker)
   - [Main thread](#main-thread)
@@ -64,7 +65,7 @@ a web worker so your main thread doesn't slow down the UI! The general process i
 1. The main thread's store wrapper clones only the paths that changed and applies the diff to the new state object.
 1. A change is emitted.
 
-# Usage
+# Usage & Examples
 
 ## Basic usage
 
@@ -160,6 +161,33 @@ const store = createWrappedStore({
 });
 ```
 
+## Letting the worker provide the initial state
+
+```javascript
+// index.js
+
+import {resolveWrappedStore} from '@alorel/redux-off-main-thread/main-thread';
+
+const worker = new Worker('/worker.js');
+
+// Same options as createWrappedStore, but initialState & syncInitialState are not allowed
+resolveWrappedStore({worker})
+  .then(store => {
+    store.dispatch({type: 'foo'});
+  })
+```
+
+```javascript
+// worker.js
+
+import {provideReduxOMTInitialState} from '@alorel/redux-off-main-thread/worker';
+
+provideReduxOMTInitialState({someInitialState: 'foo'})
+  .then(() => {
+    // main thread promise resolved
+  });
+```
+
 # API
 
 Typescript definitions are provided for clarity
@@ -187,6 +215,14 @@ export declare function onReduxWorkerThreadInitialStateReceived(): Promise<any>;
  * Rejects when called outside a worker thread.
  */
 export declare function onReduxWorkerThreadReady(): Promise<void>;
+
+
+/**
+ * Used to provide the initial state to a main thread worker initialised via {@link resolveWrappedStore}. This function
+ * should be called immediately on the worker entrypoint.
+ * @return A void promise that resolves once the initial state request has been fulfilled.
+ */
+export declare function provideReduxOMTInitialState<S = any>(state: S): Promise<void>;
 ```
 
 ## Main thread
@@ -196,7 +232,7 @@ import type {Action, AnyAction, Store} from 'redux';
 import type {EnhancerOptions} from 'redux-devtools-extension';
 
 
-export declare type WorkerPartial = Pick<Worker, 'addEventListener' | 'postMessage'>;
+export declare type WorkerPartial = Pick<Worker, 'addEventListener' | 'postMessage' | 'removeEventListener'>;
 
 
 /** A Redux store wrapped to run off the main thread */
@@ -253,4 +289,16 @@ export interface CreateWrappedStoreInit<S> {
  * @param init
  */
 export declare function createWrappedStore<S, A extends Action = AnyAction>(init: CreateWrappedStoreInit<S>): WrappedStore<S, A>;
+
+
+/** Same as a regular {@link CreateWrappedStoreInit}, but with initialState & syncInitialState omitted */
+export declare type ResolveWrappedStoreInit<S> = Omit<CreateWrappedStoreInit<S>, 'initialState' | 'syncInitialState'>;
+
+
+/**
+ * Similar to {@link createWrappedStore}, but the store on the worker is used to provide the initial state via
+ * {@link provideReduxOMTInitialState}.
+ * @return A promise that resolves with a {@link WrappedStore} when the worker store is initialised.
+ */
+export declare function resolveWrappedStore<S, A extends Action>(init: ResolveWrappedStoreInit<S>): Promise<WrappedStore<S, A>>;
 ```
