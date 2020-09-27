@@ -2,13 +2,10 @@ import {applyPatch} from 'fast-json-patch';
 import {Action, AnyAction} from 'redux';
 import {EnhancerOptions} from 'redux-devtools-extension';
 import {
-  isActionProcessedEvent,
+  BaseActionProcessedEvent,
   isMutatingActionProcessedEvent,
   MutatingActionProcessedEvent
 } from '../../common/ActionProcessedEvent';
-
-/** @internal */
-import '../../common/declarations';
 
 import {createInitialStateEvent} from '../../common/InitialStateEvent';
 import {createReadyEvent} from '../../common/ReadyEvent';
@@ -16,6 +13,7 @@ import {clonePath} from './clonePath';
 import {createSubscribers} from './wrapped-store/createSubscribers';
 import {createDispatch} from './wrapped-store/dispatch';
 import {replaceReducer} from './wrapped-store/replaceReducer';
+import {resolveEventListener} from './wrapped-store/resolveEventListener';
 import {WorkerPartial} from './wrapped-store/WorkerPartial';
 import {WrappedStore} from './wrapped-store/WrappedStore';
 
@@ -67,32 +65,26 @@ function create<S, A extends Action>(
     notifyChangeSubscribers(action, newState, oldState);
   }
 
-  if (devtoolsInit && typeof __REDUX_DEVTOOLS_EXTENSION__ !== 'undefined') {
-    const devtools = __REDUX_DEVTOOLS_EXTENSION__.connect<S, A>(devtoolsInit === true ? {} : devtoolsInit);
-    devtools.init(currentState);
-
-    worker.addEventListener('message', ({data}) => {
-      if (!isActionProcessedEvent<A>(data)) {
-        return;
-      }
-      if (isMutatingActionProcessedEvent<A>(data, true)) {
-        processMutationEvent(data);
-      }
-      devtools.send(data.action, currentState);
-    });
-  } else {
-    worker.addEventListener('message', ({data}) => {
-      if (isMutatingActionProcessedEvent<A>(data)) {
-        processMutationEvent(data);
-      }
-    });
+  function processActionProcessedEvent(data: BaseActionProcessedEvent<A>): void {
+    isMutatingActionProcessedEvent<A>(data) ?
+      processMutationEvent(data) :
+      notifyChangeSubscribers(data.action, currentState, currentState);
   }
+
+  function getState(): S {
+    return currentState;
+  }
+
+  worker.addEventListener(
+    'message',
+    resolveEventListener(devtoolsInit, currentState, getState, processActionProcessedEvent)
+  );
 
   worker.postMessage(createReadyEvent());
 
   return {
     dispatch: createDispatch<A>(worker),
-    getState: (): S => currentState,
+    getState,
     onChange,
     replaceReducer,
     subscribe(listener): () => void {
