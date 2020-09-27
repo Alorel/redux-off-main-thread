@@ -37,14 +37,15 @@ describe('common/events', function () {
   }
 
   describe('MutatingActionProcessedEvent', () => {
-    it('Should skip base check if skipBaseCheck=true', () => {
-      expect(() => isMutatingActionProcessedEvent(null, true))
-        .to.throw('Cannot read property \'changedPaths\' of null');
-    });
 
     it('Should return false if changedPaths is falsy', () => {
       const evt = createActionProcessedEvent({type: ''}, null);
       expect(isMutatingActionProcessedEvent(evt)).to.eq(false);
+    });
+
+    it('Should return true if changedPaths are provided', () => {
+      const evt = createActionProcessedEvent({type: ''}, [], []);
+      expect(isMutatingActionProcessedEvent(evt)).to.eq(true);
     });
   });
 });

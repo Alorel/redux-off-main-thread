@@ -67,8 +67,7 @@ export function isActionProcessedEvent<A extends Action = AnyAction>(
 
 /** @internal */
 export function isMutatingActionProcessedEvent<A extends Action = AnyAction>(
-  v: any,
-  skipBaseCheck?: boolean
+  v: any
 ): v is MutatingActionProcessedEvent<A> {
-  return (skipBaseCheck || isActionProcessedEvent(v)) && !!v.changedPaths;
+  return Boolean(v.changedPaths);
 }
