@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/Alorel/redux-off-main-thread/compare/2.0.0...2.0.1) (2020-09-27)
+
+
+### Bug Fixes
+
+* **main-thread:** A change event should now be emitted even if it doesn't mutate the state ([c8ca019](https://github.com/Alorel/redux-off-main-thread/commit/c8ca019c85f284da6ec21aaa3a876ef2938e1cc0))
+
 # [2.0.0](https://github.com/Alorel/redux-off-main-thread/compare/1.0.0...2.0.0) (2020-09-26)
 
 
