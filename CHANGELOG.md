@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/Alorel/redux-off-main-thread/compare/2.0.1...2.0.2) (2020-09-27)
+
+
+### Performance Improvements
+
+* **main-thread:** Optimise subscribers for notification speed ([a2d39c1](https://github.com/Alorel/redux-off-main-thread/commit/a2d39c1931e1eb9ffa129ee3408981f0367f8e5d))
+
 ## [2.0.1](https://github.com/Alorel/redux-off-main-thread/compare/2.0.0...2.0.1) (2020-09-27)
 
 
