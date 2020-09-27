@@ -8,25 +8,23 @@ type Subscribers<S, A extends Action> = [
 
 /** @internal */
 export function createSubscribers<S, A extends Action>(): Subscribers<S, A> {
-  const subscribers = new Set<SubscribersFn<S, A>>();
+  const subscribers: Array<SubscribersFn<S, A>> = [];
 
   return [
-
-    // subscribe
-    listener => {
-      subscribers.add(listener);
+    function subscribe(listener) {
+      !subscribers.includes(listener) && subscribers.push(listener);
 
       return () => {
-        subscribers.delete(listener);
+        const idx = subscribers.indexOf(listener);
+        if (idx !== -1) {
+          subscribers.splice(idx, 1);
+        }
       };
     },
 
-    // Notify
-    (action, newState, oldState) => {
-      if (subscribers.size) {
-        for (const s of subscribers) {
-          s(action, newState, oldState);
-        }
+    function notifySubscribers(action, newState, oldState) {
+      for (let i = 0; i < subscribers.length; i++) {
+        subscribers[i](action, newState, oldState);
       }
     }
   ];
