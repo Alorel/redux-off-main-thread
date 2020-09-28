@@ -41,7 +41,12 @@ export function timeoutListener<T, E>(
   };
 
   const timeout$ = new Promise<TimeoutResponse>(r => {
-    setTimeout(r.bind(null, {ok: false}));
+    setTimeout(
+      () => {
+        r({ok: false});
+      },
+      Conf.LONG_MESSAGE_LISTENER_TIMEOUT
+    );
   });
   const listener$ = new Promise<OkResponse<T>>(r => {
     listener = ({data}) => {
@@ -61,6 +66,6 @@ export function timeoutListener<T, E>(
         return rsp.data;
       }
 
-      throw new Error(`Didn't receive a ${identifier} event in ${Conf.LONG_MESSAGE_LISTENER_TIMEOUT}ms.`);
+      throw new Error(`[${identifier}] timout after ${Conf.LONG_MESSAGE_LISTENER_TIMEOUT}ms.`);
     });
 }
