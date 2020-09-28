@@ -1,3 +1,10 @@
+## [2.0.3](https://github.com/Alorel/redux-off-main-thread/compare/2.0.2...2.0.3) (2020-09-28)
+
+
+### Bug Fixes
+
+* **common:** Fixed timeout errors on worker load ([a98e1f6](https://github.com/Alorel/redux-off-main-thread/commit/a98e1f6144ae17ffacb2b8ca54c5f785c2c60d7c))
+
 ## [2.0.2](https://github.com/Alorel/redux-off-main-thread/compare/2.0.1...2.0.2) (2020-09-27)
 
 
